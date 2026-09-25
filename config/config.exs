@@ -60,6 +60,10 @@ config :phoenix, :json_library, Jason
 # Hibernated chat agents (conversation memory) are written here.
 config :jido_lab, :agent_storage, "priv/agents"
 
+# Free-tier reasoning models can sit silent for well over the 30s default
+# between streamed chunks (queueing + hidden reasoning).
+config :req_llm, stream_receive_timeout: 180_000, receive_timeout: 180_000
+
 # Model aliases resolve to OpenRouter; the key comes from OPENROUTER_API_KEY.
 config :jido_ai,
   model_aliases: %{

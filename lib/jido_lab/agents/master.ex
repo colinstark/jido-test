@@ -8,6 +8,8 @@ defmodule JidoLab.Agents.Master do
     description: "Support assistant that answers from docs and manages tickets",
     model: :capable,
     max_iterations: 8,
+    # Match req_llm stream_receive_timeout (config.exs); default is tool timeout + 60s.
+    stream_timeout_ms: 180_000,
     # jido_ai 2.3.0 emits ai.tool.started but doesn't route it, logging an error per tool call.
     signal_routes: [{"ai.tool.started", Jido.Actions.Control.Noop}],
     tools: [

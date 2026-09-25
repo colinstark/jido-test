@@ -37,7 +37,7 @@ defmodule JidoLabWeb.ChatLive do
       |> assign(busy: true, form: to_form(%{"q" => ""}))
       |> start_async(:answer, fn ->
         {:ok, req} = Master.ask(pid, q)
-        answer = Master.await(req, timeout: 120_000)
+        answer = Master.await(req, timeout: :timer.minutes(10))
         Chats.checkpoint(pid, id)
         {:ok, status} = Jido.AgentServer.status(pid)
         {answer, List.wrap(status.snapshot.details[:tool_results])}
