@@ -7,6 +7,13 @@ defmodule JidoLab.Application do
 
   @impl true
   def start(_type, _args) do
+    # Agent checkpoints are decoded with binary_to_term(bin, [:safe]), which rejects
+    # atoms that don't exist yet. In dev, modules load lazily, so the first thaw after
+    # a restart fails with :invalid_term. Releases already preload everything.
+    for {app, _, _} <- Application.loaded_applications(),
+        {:ok, mods} = :application.get_key(app, :modules),
+        do: :code.ensure_modules_loaded(mods)
+
     children = [
       JidoLabWeb.Telemetry,
       JidoLab.Repo,
