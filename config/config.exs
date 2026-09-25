@@ -63,8 +63,8 @@ config :jido_lab, :agent_storage, "priv/agents"
 # Model aliases resolve to OpenRouter; the key comes from OPENROUTER_API_KEY.
 config :jido_ai,
   model_aliases: %{
-    fast: "openrouter:anthropic/claude-haiku-4.5",
-    capable: "openrouter:anthropic/claude-sonnet-5"
+    fast: "openrouter:qwen/qwen3.8-27b:free",
+    capable: "openrouter:nvidia/nemotron-3-ultra-550b-a55b:free"
   }
 
 # Import environment specific config. This must remain at the bottom
