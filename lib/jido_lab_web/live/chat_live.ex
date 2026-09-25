@@ -4,24 +4,14 @@ defmodule JidoLabWeb.ChatLive do
   alias JidoLab.Agents.Master
   alias JidoLab.Chats
 
+  require Logger
+
   @impl true
   def mount(%{"id" => id}, _session, socket) do
-    {agent, messages} =
-      if connected?(socket) do
-        {:ok, pid} = Chats.get(id)
-        {pid, Chats.history(pid)}
-      else
-        {nil, []}
-      end
+    socket =
+      assign(socket, id: id, agent: nil, messages: [], busy: false, form: to_form(%{"q" => ""}))
 
-    {:ok,
-     assign(socket,
-       id: id,
-       agent: agent,
-       messages: messages,
-       busy: false,
-       form: to_form(%{"q" => ""})
-     )}
+    if connected?(socket), do: attach_agent(socket, id), else: {:ok, socket}
   end
 
   def mount(_params, _session, socket),
@@ -61,6 +51,23 @@ defmodule JidoLabWeb.ChatLive do
 
   def handle_async(:answer, {:exit, reason}, socket) do
     {:noreply, socket |> add_reply("Crashed: #{inspect(reason)}", []) |> assign(busy: false)}
+  end
+
+  # A checkpoint that can't be thawed (e.g. after a jido_ai upgrade) would otherwise
+  # crash this URL forever; start a fresh conversation instead and keep the file.
+  defp attach_agent(socket, id) do
+    case Chats.get(id) do
+      {:ok, pid} ->
+        {:ok, assign(socket, agent: pid, messages: Chats.history(pid))}
+
+      {:error, reason} ->
+        Logger.warning("Could not restore chat #{id}: #{inspect(reason)}")
+
+        {:ok,
+         socket
+         |> put_flash(:error, "That conversation couldn't be restored, so a new one was started.")
+         |> push_navigate(to: ~p"/")}
+    end
   end
 
   defp tool_output({:ok, output, _effects}), do: output
