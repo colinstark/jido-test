@@ -35,6 +35,28 @@ defmodule JidoLab.ChatsTest do
              Chats.history(new_pid)
   end
 
+  test "history includes assistant replies that carry thinking" do
+    context =
+      Jido.AI.Context.new(system_prompt: "sys")
+      |> Jido.AI.Context.append_user("Who are you?")
+      |> Jido.AI.Context.append_assistant("The support assistant.", nil,
+        thinking: "User asks identity."
+      )
+
+    {:ok, pid} =
+      Jido.AgentServer.start_link(
+        jido: JidoLab.Jido,
+        agent: Master,
+        initial_state: %{context: context}
+      )
+
+    assert [
+             %{role: :user, text: "Who are you?"},
+             %{role: :assistant, text: "The support assistant."}
+           ] =
+             Chats.history(pid)
+  end
+
   # The registry drops the dead pid asynchronously.
   defp eventually(fun, tries \\ 20) do
     case fun.() do

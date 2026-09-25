@@ -45,10 +45,20 @@ defmodule JidoLab.Chats do
   def history(pid) do
     {:ok, status} = Jido.AgentServer.status(pid)
 
-    for %{role: role, content: text} <- List.wrap(status.snapshot.details[:conversation]),
-        role in [:user, :assistant] and is_binary(text) and text != "",
+    for %{role: role, content: content} <- List.wrap(status.snapshot.details[:conversation]),
+        role in [:user, :assistant],
+        text = text_of(content),
+        text != "",
         do: %{role: role, text: text, tools: []}
   end
+
+  # Replies from reasoning models are content parts: [%{type: :thinking}, %{type: :text}].
+  defp text_of(text) when is_binary(text), do: text
+
+  defp text_of(parts) when is_list(parts),
+    do: for(%{type: :text, text: t} <- parts, into: "", do: t)
+
+  defp text_of(_), do: ""
 
   defp storage, do: {Jido.Storage.File, path: Application.fetch_env!(:jido_lab, :agent_storage)}
 end
