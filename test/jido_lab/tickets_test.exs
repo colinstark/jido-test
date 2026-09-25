@@ -1,5 +1,5 @@
 defmodule JidoLab.TicketsTest do
-  use JidoLab.DataCase, async: true
+  use JidoLab.DataCase, async: false
 
   alias JidoLab.Tickets
 
