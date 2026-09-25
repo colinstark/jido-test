@@ -42,3 +42,6 @@ npm-debug.log
 
 # Hibernated agent checkpoints
 /priv/agents/
+
+# macOS
+.DS_Store
